@@ -5,18 +5,22 @@ using UnityEngine;
 public class Player : MonoBehaviour
 {
     public Rigidbody Rigid;
+    public Animator Ani;
     public float MovementSpeed;
     public float JumpPower;
     public GameObject WaterEffect;
     public bool isDizzy;
 
 
-    public bool isJump = false;
+    //public bool isJump = false;
+    public bool isSpin = false;
+    public float Z_Pos = 0;
     public bool isInvisible = false;
 
     void Start()
     {
         Rigid = GetComponent<Rigidbody>();
+        Ani = GetComponent<Animator>();
     }
 
 
@@ -74,6 +78,7 @@ public class Player : MonoBehaviour
         */
 
         //점프
+        /*
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if (!isJump)
@@ -103,6 +108,7 @@ public class Player : MonoBehaviour
         {
             isJump = false;
         }
+          */
 
         if (Input.GetButton("Horizontal") || Input.GetButton("Vertical"))
         {
@@ -116,10 +122,28 @@ public class Player : MonoBehaviour
         {
 
             StartCoroutine(WaterRecoverStart());
+            Ani.SetBool("isWaterShoot", false);
+        }
+      
+
+        //스핀 휠(패링)
+        if (Input.GetKeyDown(KeyCode.Space))
+        {
+            if(!isSpin && TumblerUI.Instance.TumblerGauge > (TumblerUI.Instance.TumblerGauge / 10))
+            {
+                Spin();
+            }
+
+        }
+
+        if(isSpin && Z_Pos < 360)
+        {
+            transform.Rotate(new Vector3(0, 0, Time.deltaTime * -900f));
+            Z_Pos += Time.deltaTime * 900f;
         }
 
         //물 쏘고 시간 지났을 때 수압 점점 감소
-        if(TumblerUI.Instance.WaterRecover && TumblerUI.Instance.WaterShootPower > 0)
+        if (TumblerUI.Instance.WaterRecover && TumblerUI.Instance.WaterShootPower > 0)
         {
             if(TumblerUI.Instance.WaterShootPower <= 0)
             {
@@ -144,12 +168,27 @@ public class Player : MonoBehaviour
         float h = Input.GetAxisRaw("Horizontal");
         Rigid.velocity = new Vector3(h * MovementSpeed, Rigid.velocity.y, Rigid.velocity.z);
     }
-
+    /*
     public void Jump()
     {
         Rigid.velocity = new Vector3(Rigid.velocity.x, JumpPower, Rigid.velocity.z);
         isJump = true;
 
+    }
+    */
+
+    public void Spin()
+    {
+        TumblerUI.Instance.TumblerGauge -= (TumblerUI.Instance.TumblerGauge / 10);
+        isSpin = true;
+        StartCoroutine(SpinStop());
+    }
+
+    public IEnumerator SpinStop()
+    {
+        yield return new WaitForSeconds(0.5f);
+        Z_Pos = 0;
+        isSpin = false;
     }
 
     public void WaterShoot()
@@ -166,6 +205,7 @@ public class Player : MonoBehaviour
                 TumblerUI.Instance.TumblerGauge -= 10 * Time.deltaTime;
                 TumblerUI.Instance.WaterRecover = false;
                 WaterDirection(dir_x, dir_y);
+                Ani.SetBool("isWaterShoot", true);
 
                 //Vector3 rot = new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), 0);
                 //water.transform.rotation = Quaternion.Euler(Mathf.Atan2(rot.x, rot.y) * Mathf.Rad2Deg, Mathf.Atan2(rot.x, rot.y) * Mathf.Rad2Deg, 0);
@@ -202,6 +242,7 @@ public class Player : MonoBehaviour
             StartCoroutine(HitDizzyRecovery());
             isDizzy = true;
             isInvisible = true;
+            Ani.SetBool("isStun", true);
         }
   
     }
@@ -212,11 +253,13 @@ public class Player : MonoBehaviour
         TumblerUI.Instance.TumblerDizzyImage.SetActive(false);
         isDizzy = false;
         isInvisible = false;
+        Ani.SetBool("isStun", false);
     }
 
     public void WaterDirection(float x, float y)
     {
         GameObject water = Instantiate(WaterEffect, gameObject.transform);
+        water.transform.position = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
         if(x == 0 && y == -1)//아래
         {
             water.transform.rotation = Quaternion.Euler(90, 90, 0);
