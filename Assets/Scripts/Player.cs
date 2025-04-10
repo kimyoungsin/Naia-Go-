@@ -142,6 +142,7 @@ public class Player : MonoBehaviour
             Z_Pos += Time.deltaTime * 900f;
         }
 
+
         //물 쏘고 시간 지났을 때 수압 점점 감소
         if (TumblerUI.Instance.WaterRecover && TumblerUI.Instance.WaterShootPower > 0)
         {
@@ -235,15 +236,23 @@ public class Player : MonoBehaviour
 
     public void EnemyHit()
     {
-        if(!isInvisible)
+        if(!isSpin)
         {
-            Rigid.velocity = new Vector3(0, 0, Rigid.velocity.z);
-            TumblerUI.Instance.TumblerDizzyImage.SetActive(true);
-            StartCoroutine(HitDizzyRecovery());
-            isDizzy = true;
-            isInvisible = true;
-            Ani.SetBool("isStun", true);
+            if (!isInvisible)
+            {
+                Rigid.velocity = new Vector3(0, 0, Rigid.velocity.z);
+                TumblerUI.Instance.TumblerDizzyImage.SetActive(true);
+                StartCoroutine(HitDizzyRecovery());
+                isDizzy = true;
+                isInvisible = true;
+                Ani.SetBool("isStun", true);
+            }
         }
+        else
+        {
+
+        }
+  
   
     }
 
