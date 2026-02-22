@@ -26,15 +26,18 @@ public class Nururing : MonoBehaviour
 
     void Update()
     {
+
         if (LeftMove)
         {
             transform.Translate(new Vector2(-1, 0) * MovementSpeed * Time.deltaTime);
+            transform.localScale = new Vector3(1, 1, 1);
 
         }
         else if (RightMove)
         {
             transform.Translate(new Vector2(1, 0) * MovementSpeed * Time.deltaTime);
-
+         
+            transform.localScale = new Vector3(-1, 1, 1);
         }
     }
 

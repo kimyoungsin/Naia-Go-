@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class CameraManager : MonoBehaviour
 {
@@ -31,10 +32,31 @@ public class CameraManager : MonoBehaviour
     {
         Player = FindObjectOfType<Player>().GetComponent<Transform>();
     }
+    public void OnEnable()
+    {
+        SceneManager.sceneLoaded += OnSceneLoaded;
+    }
 
+    public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        Player = FindObjectOfType<Player>().GetComponent<Transform>();
+    }
+
+    public void OnDisable()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
     public void Update()
     {
-        transform.position = new Vector3(Player.position.x, Player.position.y + 4.15f, -10);
+        if(Player != null)
+        {
+            transform.position = new Vector3(Player.position.x, Player.position.y + 4.15f, -10);
+        }
+
+        if(Input.GetKeyDown(KeyCode.P))
+        {
+            ScreenCapture.CaptureScreenshot("Naia.png");
+        }
     }
 
 

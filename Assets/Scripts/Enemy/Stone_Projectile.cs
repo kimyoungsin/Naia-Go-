@@ -17,7 +17,7 @@ public class Stone_Projectile : MonoBehaviour
         Invoke("Destroy", 1.5f);
     }
 
-
+    /*
     public void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Player")
@@ -35,6 +35,11 @@ public class Stone_Projectile : MonoBehaviour
             Debug.Log("Ãæµ¹·®: " + Power);
             Destroy(gameObject);
         }
+    }
+    */
+    public void OnBecameInvisible()
+    {
+        Destroy(gameObject);
     }
 
     public void Destroy()

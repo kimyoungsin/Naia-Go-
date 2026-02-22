@@ -8,101 +8,60 @@ public class Player : MonoBehaviour
     public Animator Ani;
     public float MovementSpeed;
     public float JumpPower;
-    public GameObject WaterEffect;
+    public ParticleSystem WaterEffect;
+    public GameObject DizzyEffect;
     public bool isDizzy;
 
 
     //public bool isJump = false;
+    public float SpinTime = 0.25f;
     public bool isSpin = false;
-    public float Z_Pos = 0;
+    public bool isWindSpin = false;
     public bool isInvisible = false;
+    public bool isWindHit = false;
 
     void Start()
     {
         Rigid = GetComponent<Rigidbody>();
         Ani = GetComponent<Animator>();
+        if (WaterEffect.isPlaying)
+        {
+            WaterEffect.Stop();
+
+
+        }
+
     }
 
 
     void Update()
     {
-        //¿Ãµø
+        //Ïù¥Îèô
         if (Input.GetKey(KeyCode.A))
         {
-            transform.localScale = new Vector2(-1, 1);
+            transform.localScale = new Vector2(1, 1);
             Rigid.velocity = new Vector3(-MovementSpeed, Rigid.velocity.y, Rigid.velocity.z);
         }
 
         if (Input.GetKey(KeyCode.D))
         {
-            transform.localScale = new Vector2(1, 1);
+            
+            transform.localScale = new Vector2(-1, 1);
             Rigid.velocity = new Vector3(MovementSpeed, Rigid.velocity.y, Rigid.velocity.z);
         }
 
-        //¿Ãµø ¡æ∑· Ω√
+        /*
+        //Ïù¥Îèô Ï¢ÖÎ£å Ïãú
         if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D))
         {
             Rigid.velocity = new Vector3(0, Rigid.velocity.y, Rigid.velocity.z);
             
         }
-
-        /*
-        //¿Ãµø
-        if (Input.GetButton("Horizontal"))
-        {
-            if (Input.GetAxisRaw("Horizontal") < 0)
-            {
-                transform.localScale = new Vector2(-1, 1);
-            }
-            if (Input.GetAxisRaw("Horizontal") > 0)
-            {
-                transform.localScale = new Vector2(1, 1);
-            }
-            Walk();
-        }
-    
-
-        //¿Ãµø ¡æ∑· Ω√
-        if (Input.GetButtonUp("Horizontal"))
-        {
-            Rigid.velocity = new Vector3(0, Rigid.velocity.y, Rigid.velocity.z);
-            if (Input.GetAxisRaw("Horizontal") < 0)
-            {
-                transform.localScale = new Vector2(-1, 1);
-            }
-            if (Input.GetAxisRaw("Horizontal") > 0)
-            {
-                transform.localScale = new Vector2(1, 1);
-            }
-        }
         */
 
-        //¡°«¡
         /*
-        if (Input.GetKeyDown(KeyCode.Space))
-        {
-            if (!isJump)
-            {
-                Jump();
-            }
-        }
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-         
-                if (Rigid.velocity.y > 0)
-                {
-                    Rigid.velocity = new Vector3(Rigid.velocity.x, -Rigid.velocity.y, Rigid.velocity.z);
-                }
-                else
-                {
-                    Rigid.velocity = new Vector3(Rigid.velocity.x, Rigid.velocity.y, Rigid.velocity.z);
-                }
-       
 
-
-        }
-
-        //¬¯¡ˆ √º≈©
+        //Ï∞©ÏßÄ Ï≤¥ÌÅ¨Ïö©
         Debug.DrawRay(Rigid.position, Vector3.down, new Color(0,0.5f,0));
         if(isJump && Physics.Raycast(Rigid.position, Vector3.down, 0.5f, LayerMask.GetMask("Ground")))
         {
@@ -120,30 +79,33 @@ public class Player : MonoBehaviour
         }
         if(Input.GetButtonUp("Horizontal") || Input.GetButtonUp("Vertical"))
         {
-
+            if(WaterEffect != null)
+            {
+                WaterEffect.GetComponent<ParticleSystem>().Stop();
+            }
+       
             StartCoroutine(WaterRecoverStart());
             Ani.SetBool("isWaterShoot", false);
         }
       
 
-        //Ω∫«… »Ÿ(∆–∏µ)
+        //ÌÖÄÎ∏îÎü¨ ÌöåÏ†Ñ(Ïä§ÌïÄ)
         if (Input.GetKeyDown(KeyCode.Space))
         {
             if(!isSpin && TumblerUI.Instance.TumblerGauge > (TumblerUI.Instance.TumblerGauge / 10))
             {
-                Spin();
+                StartCoroutine(Spin());
             }
 
         }
-
-        if(isSpin && Z_Pos < 360)
+        //ÌöåÏ†Ñ Î≥¥Ï†ïÏö©
+        if(!isSpin && transform.rotation.z > 0)
         {
-            transform.Rotate(new Vector3(0, 0, Time.deltaTime * -900f));
-            Z_Pos += Time.deltaTime * 900f;
+            transform.rotation = Quaternion.Euler(0, 0, 0);
         }
 
 
-        //π∞ ΩÓ∞Ì Ω√∞£ ¡ˆ≥µ¿ª ∂ß ºˆæ– ¡°¡° ∞®º“
+        //ÌÖÄÎ∏îÎü¨ ÏàòÏïï Í≤åÏù¥ÏßÄ Í∞êÏÜå
         if (TumblerUI.Instance.WaterRecover && TumblerUI.Instance.WaterShootPower > 0)
         {
             if(TumblerUI.Instance.WaterShootPower <= 0)
@@ -152,15 +114,19 @@ public class Player : MonoBehaviour
             }
             else
             {
-                TumblerUI.Instance.WaterShootPower -= TumblerUI.Instance.WaterRecoverValue * Time.deltaTime;
+                TumblerUI.Instance.WaterShootPower -= (TumblerUI.Instance.WaterRecoverValue * 0.75f) * Time.deltaTime;
             }
     
         }
-        //π∞ ΩÓ∞Ì Ω√∞£ ¡ˆ≥µ¿ª ∂ß ≈“∫Ì∑Ø ºˆ∫– »∏∫π
-        if (TumblerUI.Instance.WaterRecover && TumblerUI.Instance.TumblerGauge < 100)
+        //ÌÖÄÎ∏îÎü¨ ÏàòÎ∂Ñ Í≤åÏù¥ÏßÄ ÌöåÎ≥µ
+        if (TumblerUI.Instance.WaterRecover && TumblerUI.Instance.TumblerGauge < 100 && TumblerUI.Instance.TumblerGauge >= 20)
         {
             TumblerUI.Instance.TumblerGauge += TumblerUI.Instance.TumblerTumblerGaugeRecoverValue * Time.deltaTime;
 
+        }
+        else if(TumblerUI.Instance.WaterRecover && TumblerUI.Instance.TumblerGauge < 20)
+        {
+            TumblerUI.Instance.TumblerGauge += (TumblerUI.Instance.TumblerTumblerGaugeRecoverValue * 2) * Time.deltaTime;
         }
     }
 
@@ -178,18 +144,38 @@ public class Player : MonoBehaviour
     }
     */
 
-    public void Spin()
+    public IEnumerator Spin()
     {
-        TumblerUI.Instance.TumblerGauge -= (TumblerUI.Instance.TumblerGauge / 10);
+        //Mathf.Abs() : Ï†àÎåÄÍ∞í Î∞òÌôò(90 = 90, -90 = 90)
+        //Mathf.Sign() : Í∞íÏù¥ ÏñëÏàòÎ©¥ 1, ÏùåÏàòÎ©¥ -1, 0Ïù¥Î©¥ 0ÏùÑ Î∞òÌôò
+
         isSpin = true;
-        StartCoroutine(SpinStop());
+        float rotated = 0f;
+        while (rotated < Mathf.Abs(360))
+        {
+            float step = (Mathf.Abs(360) / SpinTime) * Time.deltaTime;
+            transform.Rotate(0, 0, Mathf.Sign(360) * step, Space.Self);
+            rotated += step;
+            yield return null;
+        }
+        isSpin = false;
     }
 
-    public IEnumerator SpinStop()
+    public IEnumerator WindSpin()
     {
-        yield return new WaitForSeconds(0.5f);
-        Z_Pos = 0;
-        isSpin = false;
+        //Mathf.Abs() : Ï†àÎåÄÍ∞í Î∞òÌôò(90 = 90, -90 = 90)
+        //Mathf.Sign() : Í∞íÏù¥ ÏñëÏàòÎ©¥ 1, ÏùåÏàòÎ©¥ -1, 0Ïù¥Î©¥ 0ÏùÑ Î∞òÌôò
+
+        isWindSpin = true;
+        float rotated = 0f;
+        while (rotated < Mathf.Abs(360))
+        {
+            float step = (Mathf.Abs(360) / SpinTime) * Time.deltaTime;
+            transform.Rotate(0, Mathf.Sign(360) * step, 0, Space.Self);
+            rotated += step;
+            yield return null;
+        }
+        isWindSpin = false;
     }
 
     public void WaterShoot()
@@ -200,16 +186,28 @@ public class Player : MonoBehaviour
             {
                 float dir_x = Input.GetAxisRaw("Horizontal");
                 float dir_y = Input.GetAxisRaw("Vertical");
-                Rigid.velocity = new Vector3(-dir_x * TumblerUI.Instance.WaterShootPower, -dir_y * TumblerUI.Instance.WaterShootPower, 0);
+                Vector2 direction = new Vector2(dir_x, dir_y).normalized;
+                if (direction != Vector2.zero)
+                {
+                    float angle = Mathf.Atan2(-direction.y, direction.x) * Mathf.Rad2Deg;
+                    Quaternion rotation = Quaternion.Euler(angle, 90f, 0);
+                    WaterEffect.transform.rotation = Quaternion.Slerp(WaterEffect.transform.rotation, rotation, Time.deltaTime * 60f);
+                }
+                
+                
+                
+                if (!WaterEffect.isPlaying)
+                {
+                    WaterEffect.Play();
+                }
 
+                Rigid.velocity = new Vector3(-dir_x * TumblerUI.Instance.WaterShootPower + 1f, -dir_y * TumblerUI.Instance.WaterShootPower + 1f, 0);
                 TumblerUI.Instance.WaterShootPower += 1 * Time.deltaTime;
                 TumblerUI.Instance.TumblerGauge -= 10 * Time.deltaTime;
                 TumblerUI.Instance.WaterRecover = false;
-                WaterDirection(dir_x, dir_y);
+                //WaterDirection(dir_x, dir_y);
                 Ani.SetBool("isWaterShoot", true);
 
-                //Vector3 rot = new Vector3(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"), 0);
-                //water.transform.rotation = Quaternion.Euler(Mathf.Atan2(rot.x, rot.y) * Mathf.Rad2Deg, Mathf.Atan2(rot.x, rot.y) * Mathf.Rad2Deg, 0);
             }
 
         }
@@ -217,14 +215,60 @@ public class Player : MonoBehaviour
         {
             isDizzy = true;
             TumblerUI.Instance.TumblerDizzyImage.SetActive(true);
+            DizzyEffect.SetActive(true);
             StartCoroutine(DizzyRecoverStart());
         }
    
+    }
+
+    public void JoyStickWaterShoot(float dir_x, float dir_y)
+    {
+        if (TumblerUI.Instance.TumblerGauge > 0)
+        {
+            if (!isDizzy)
+            {
+                Vector2 direction = new Vector2(dir_x, dir_y).normalized;
+                if (direction != Vector2.zero)
+                {
+                    float angle = Mathf.Atan2(-direction.y, direction.x) * Mathf.Rad2Deg;
+                    Quaternion rotation = Quaternion.Euler(angle, 90f, 0);
+                    WaterEffect.transform.rotation = Quaternion.Slerp(WaterEffect.transform.rotation, rotation, Time.deltaTime * 60f);
+                }
+
+                Rigid.velocity = new Vector3(-dir_x * TumblerUI.Instance.WaterShootPower + 1f, -dir_y * TumblerUI.Instance.WaterShootPower + 1f, 0);
+        
+                if (!WaterEffect.isPlaying)
+                {
+                    WaterEffect.Play();
+                    
+         
+                }
+
+                TumblerUI.Instance.WaterShootPower += 1 * Time.deltaTime;
+                TumblerUI.Instance.TumblerGauge -= 10 * Time.deltaTime;
+                TumblerUI.Instance.WaterRecover = false;
+                //WaterDirection(dir_x, dir_y);
+                Ani.SetBool("isWaterShoot", true);
+
+            }
+
+        }
+        else if (TumblerUI.Instance.TumblerGauge <= 1)
+        {
+            isDizzy = true;
+            TumblerUI.Instance.TumblerDizzyImage.SetActive(true);
+            Ani.SetBool("isStun", true);
+            DizzyEffect.SetActive(true);
+            StartCoroutine(DizzyRecoverStart());
+        }
+
     }
     public IEnumerator DizzyRecoverStart()
     {
         yield return new WaitForSeconds(1.5f);
         TumblerUI.Instance.TumblerDizzyImage.SetActive(false);
+        Ani.SetBool("isStun", false);
+        DizzyEffect.SetActive(false);
         isDizzy = false;
     }
 
@@ -232,6 +276,110 @@ public class Player : MonoBehaviour
     {
         yield return new WaitForSeconds(TumblerUI.Instance.WaterRecoverTime);
         TumblerUI.Instance.WaterRecover = true;
+    }
+
+    public void OnCollisionEnter(Collision collision)
+    {
+        if (!isSpin)
+        {
+            if (!isInvisible)
+            {
+                if (collision.gameObject.tag == "Stone")
+                {
+                    if (collision.gameObject.transform.position.x > transform.position.x)
+                    {
+                        Rigid.AddForce(new Vector3(-1, 1, 0), ForceMode.Impulse);
+
+                    }
+                    else
+                    {
+                        Rigid.AddForce(new Vector3(1, 1, 0), ForceMode.Impulse);
+                    }
+                    Rigid.velocity = new Vector3(0, 0, Rigid.velocity.z);
+                    TumblerUI.Instance.TumblerDizzyImage.SetActive(true);
+                    DizzyEffect.SetActive(true);
+                    StartCoroutine(HitDizzyRecovery());
+                    isDizzy = true;
+                    isInvisible = true;
+                    Ani.SetBool("isStun", true);
+                    Destroy(collision.gameObject);
+                }
+    
+            }
+        }
+       
+    }
+
+    public void OnTriggerEnter(Collider collision)
+    {
+        if (collision.gameObject.tag == "Wind")
+        {
+
+            if (!isSpin)
+            {
+                if (!isInvisible && !isWindHit)
+                {
+                    Rigid.velocity = new Vector3(0, 0, Rigid.velocity.z);
+                    isWindHit = true;
+                    if (TumblerUI.Instance.WaterShootPower > 0)
+                    {
+                        TumblerUI.Instance.WaterShootPower -= 2;
+                        StartCoroutine(WindSpin());
+                        StartCoroutine(WindHitRecovery());
+
+                    }
+                }
+            }
+
+        }
+        if (collision.gameObject.tag == "Fire")
+        {
+
+            if (!isSpin)
+            {
+                if (!isInvisible)
+                {
+                    TumblerUI.Instance.TumblerGauge -= (TumblerUI.Instance.TumblerGauge / 10);
+                    Destroy(collision.gameObject);
+                }
+            }
+
+        }
+        if (collision.gameObject.tag == "Item")
+        {
+
+            if (collision.GetComponent<Item>().itemdata != null)
+            {
+                //TumblerUI.Instance.TumblerGauge += collision.GetComponent<Item>().itemdata.ItemRecoverValue;
+                Destroy(collision.gameObject);
+            }
+
+        }
+        if (collision.gameObject.tag == "Soda")
+        {
+
+            if (collision.GetComponent<Item>().itemdata != null)
+            {
+                TumblerUI.Instance.TumblerGauge += collision.GetComponent<Item>().itemdata.ItemRecoverValue;
+                Destroy(collision.gameObject);
+            }
+
+        }
+        if (collision.gameObject.tag == "Strawberry")
+        {
+
+            if (collision.GetComponent<Item>().itemdata != null)
+            {
+                TumblerUI.Instance.WaterShootPower += collision.GetComponent<Item>().itemdata.ItemRecoverValue;
+                Destroy(collision.gameObject);
+            }
+
+        }
+        if (collision.gameObject.tag == "Goal")
+        {
+            UI_Canvas.Instance.ClaerUI_On();
+            collision.gameObject.GetComponent<BoxCollider>().enabled = false;
+        }
     }
 
     public void EnemyHit()
@@ -242,67 +390,96 @@ public class Player : MonoBehaviour
             {
                 Rigid.velocity = new Vector3(0, 0, Rigid.velocity.z);
                 TumblerUI.Instance.TumblerDizzyImage.SetActive(true);
+                DizzyEffect.SetActive(true);
                 StartCoroutine(HitDizzyRecovery());
                 isDizzy = true;
                 isInvisible = true;
                 Ani.SetBool("isStun", true);
             }
         }
-        else
-        {
-
-        }
-  
-  
     }
 
     public IEnumerator HitDizzyRecovery()
     {
         yield return new WaitForSeconds(0.5f);
         TumblerUI.Instance.TumblerDizzyImage.SetActive(false);
+        DizzyEffect.SetActive(false);
         isDizzy = false;
         isInvisible = false;
         Ani.SetBool("isStun", false);
     }
-
-    public void WaterDirection(float x, float y)
+    public void WindHit(float windPower)
     {
-        GameObject water = Instantiate(WaterEffect, gameObject.transform);
-        water.transform.position = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
-        if(x == 0 && y == -1)//æ∆∑°
+        if (!isSpin)
         {
-            water.transform.rotation = Quaternion.Euler(90, 90, 0);
-        }
-        if (x == -1 && y == -1)//øﬁ¬ -æ∆∑°
-        {
-            water.transform.rotation = Quaternion.Euler(135, 90, 0);
-        }
-        if (x == -1 && y == 0)//øﬁ¬ 
-        {
-            water.transform.rotation = Quaternion.Euler(180, 90, 0);
-        }
-        if (x == -1 && y == 1)//øﬁ¬ -¿ß
-        {
-            water.transform.rotation = Quaternion.Euler(225, 90, 0);
-        }
-        if (x == 0 && y == 1)//¿ß
-        {
-            water.transform.rotation = Quaternion.Euler(270, 90, 0);
-        }
-        if (x == 1 && y == 1)//ø¿∏•¬ -¿ß
-        {
-            water.transform.rotation = Quaternion.Euler(315, 90, 0);
-        }
-        if (x == 1 && y == 0)//ø¿∏•¬ 
-        {
-            water.transform.rotation = Quaternion.Euler(0, 90, 0);
-        }
-        if (x == 1 && y == -1)//ø¿∏•¬ -æ∆∑°
-        {
-            water.transform.rotation = Quaternion.Euler(45, 90, 0);
+            if (!isInvisible && !isWindHit)
+            {
+                Rigid.velocity = new Vector3(0, 0, Rigid.velocity.z);
+                isWindHit = true;
+                Ani.SetBool("isStun", true);
+                if (TumblerUI.Instance.WaterShootPower > 0)
+                {
+                    TumblerUI.Instance.WaterShootPower -= windPower;
+                    StartCoroutine(WindHitRecovery());
+                    
+                }
+            }
         }
     }
 
-       
-    
+    public IEnumerator WindHitRecovery()
+    {
+        yield return new WaitForSeconds(0.5f);
+        //TumblerUI.Instance.TumblerDizzyImage.SetActive(false);
+        Ani.SetBool("isStun", false);
+        isWindHit = false;
+    }
+
+    public void WaterDirection(float x, float y)
+    {
+
+
+        //GameObject water = Instantiate(WaterEffect, gameObject.transform);
+        //water.transform.position = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
+
+        
+        /*
+        WaterEffect.transform.position = new Vector3(transform.position.x, transform.position.y + 0.1f, transform.position.z);
+        if (x == 0 && y == -1)//ÔøΩ∆∑ÔøΩ
+        {
+            WaterEffect.transform.rotation = Quaternion.Euler(90, 90, 0);
+            //WaterEffect.transform.Rotate()
+        }
+        if (x == -1 && y == -1)//ÔøΩÔøΩÔøΩÔøΩ-ÔøΩ∆∑ÔøΩ
+        {
+            WaterEffect.transform.rotation = Quaternion.Euler(135, 90, 0);
+        }
+        if (x == -1 && y == 0)//ÔøΩÔøΩÔøΩÔøΩ
+        {
+            WaterEffect.transform.rotation = Quaternion.Euler(180, 90, 0);
+        }
+        if (x == -1 && y == 1)//ÔøΩÔøΩÔøΩÔøΩ-ÔøΩÔøΩ
+        {
+            WaterEffect.transform.rotation = Quaternion.Euler(225, 90, 0);
+        }   
+        if (x == 0 && y == 1)//ÔøΩÔøΩ
+        {
+            WaterEffect.transform.rotation = Quaternion.Euler(270, 90, 0);
+        }
+        if (x == 1 && y == 1)//ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ-ÔøΩÔøΩ
+        {
+            WaterEffect.transform.rotation = Quaternion.Euler(315, 90, 0);
+        }
+        if (x == 1 && y == 0)//ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
+        {
+            WaterEffect.transform.rotation = Quaternion.Euler(0, 90, 0);
+        }
+        if (x == 1 && y == -1)//ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ-ÔøΩ∆∑ÔøΩ
+        {
+            WaterEffect.transform.rotation = Quaternion.Euler(45, 90, 0);
+        }
+        */
+    }
+
+
 }

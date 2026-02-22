@@ -11,12 +11,12 @@ GameObject:
   - component: {fileID: 4671136873990715968}
   - component: {fileID: 4671136873990715971}
   - component: {fileID: 4671136873990715970}
-  - component: {fileID: 4671136873990715981}
-  - component: {fileID: 6713703707557108194}
+  - component: {fileID: 757977711850472980}
+  - component: {fileID: 7138697073643302620}
   - component: {fileID: 2229828940136753644}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: FireSpirit
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -28,13 +28,13 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4671136873990715980}
+  serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 7.56, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &4671136873990715971
 SpriteRenderer:
@@ -74,8 +74,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 543907287
-  m_SortingLayer: 1
+  m_SortingLayerID: -452069027
+  m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: 21300000, guid: 70c2113b8c0821547a56d82d3d6f487f, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -95,29 +95,50 @@ Rigidbody:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4671136873990715980}
-  serializedVersion: 2
+  serializedVersion: 4
   m_Mass: 1
   m_Drag: 0
   m_AngularDrag: 0.05
+  m_CenterOfMass: {x: 0, y: 0, z: 0}
+  m_InertiaTensor: {x: 1, y: 1, z: 1}
+  m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ImplicitCom: 1
+  m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 120
   m_CollisionDetection: 0
---- !u!135 &4671136873990715981
-SphereCollider:
+--- !u!136 &757977711850472980
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4671136873990715980}
   m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
   m_IsTrigger: 0
+  m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.5
+  m_Radius: 0.4
+  m_Height: 1.55
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &6713703707557108194
+--- !u!114 &7138697073643302620
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -126,25 +147,25 @@ MonoBehaviour:
   m_GameObject: {fileID: 4671136873990715980}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e78dfcc825f0e643ad8346c7867233c, type: 3}
+  m_Script: {fileID: 11500000, guid: 7ba45d94b7d61c643b6b814b4260f938, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   rigid: {fileID: 0}
-  Power: 4
-  StonePrefab: {fileID: 7120276033761861165, guid: 14bf61cf168df234bbc869561d3d7eb8, type: 3}
-  AttackRange: 6.5
-  AttackSpeed: 2.5
-  AttackPower: 6
+  Power: 3
+  FireballPrefab: {fileID: 7120276033761861165, guid: 550174220ffede94cb5411e2dcac9fa6, type: 3}
+  AttackRange: 7
+  AttackSpeed: 1.5
+  AttackPower: 3
   isAttack: 0
   PlayerTarget: {fileID: 0}
   RandomNum: 0
   LeftMove: 0
   RightMove: 0
-  MovementSpeed: 1.5
+  MovementSpeed: 2
   Anim: {fileID: 0}
 --- !u!95 &2229828940136753644
 Animator:
-  serializedVersion: 4
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -161,4 +182,5 @@ Animator:
   m_WarningMessage: 
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
-  m_KeepAnimatorControllerStateOnDisable: 0
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0

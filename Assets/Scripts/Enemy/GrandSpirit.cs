@@ -33,7 +33,18 @@ public class GrandSpirit : MonoBehaviour
     
     void Update()
     {
-        if(!isAttack)
+
+        //공격 대상 방향으로 방향전환
+        if (PlayerTarget != null && PlayerTarget.transform.position.x < transform.position.x)
+        {
+            transform.localScale = new Vector3(-1, 1, 1);
+        }
+        else
+        {
+            transform.localScale = new Vector3(1, 1, 1);
+        }
+
+        if (!isAttack)
         {
             if (LeftMove)
             {
